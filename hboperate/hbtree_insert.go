@@ -43,7 +43,6 @@ func InsertAVL(T *BiTNode, e int , taller *int )bool {
 				case LH: //原本T的左边的，那么插入后其父情节点的平衡因子 = 2，此时会长高为2，平衡后会变成0
 					LeftBalance(T)
 					*taller = 0
-					T.bf = EH
 					break
 				case EH: //如果原本T是平衡的EH，插入后其平衡因子 = 1，长高一个
 					T.bf = LH
@@ -87,6 +86,7 @@ func LeftBalance(T *BiTNode){
 	switch l.bf {
 	case LH:
 		Rotate_left(T)
+		T.bf = EH
 	case RH: //先进行T的左子树tl和tl的右子树的交换位置，然后在右旋
 		l.lchild = new(BiTNode)
 		l.lchild.data = l.data
@@ -95,6 +95,53 @@ func LeftBalance(T *BiTNode){
 		l.lchild.bf = EH
 		l.bf = EH
 		Rotate_left(T)
+		T.bf = EH
+	case EH:
+		switch l.lchild.bf {
+			case LH: //将根节点的前驱当做根节点，
+				t := new(BiTNode)
+				t.bf = RH //t下面只有一个节点
+				t.lchild = nil
+				t.rchild = T.rchild
+				t.data = T.data //将T存入t中
+				T.data = T.lchild.rchild.data //将T的前驱（T左孩子的右孩子当做根）
+				T.bf = LH //T的左子树比右子树多一个节点
+				T.rchild = t //T的右孩子指向t
+				T.lchild.lchild.rchild = T.lchild //T.左节点当做T左节点的左节点的右节点（此时T左节点的左节点和T的左节点互相指着，之后需要删除T左节点指向T左节点的左节点的指针）
+				T.lchild = T.lchild.lchild // 将T的左节点的左节点 当做T的左节点 此时T的原本左节点已经脱离
+				T.lchild.rchild.lchild = nil //将T原本的左节点（此时是T左节点的右节点）的左指针删除
+				T.lchild.bf = EH
+				T.lchild.lchild.bf = EH
+				T.lchild.rchild.bf = EH
+			case RH:
+				//先将T左节点的左节点和T左节点的左节点的右节点调整位置，后续动作一样
+				T.lchild.lchild .lchild = & BiTNode{
+					data: T.lchild.lchild.data,
+					bf:EH,
+				}
+				T.lchild.lchild.data = T.lchild.lchild.rchild.data
+				T.lchild.lchild.rchild = nil
+				T.lchild.lchild.bf = EH
+				t := new(BiTNode)
+				t.bf = RH //t下面只有一个节点
+				t.lchild = nil
+				t.rchild = T.rchild
+				t.data = T.data //将T存入t中
+				T.data = T.lchild.rchild.data //将T的前驱（T左孩子的右孩子当做根）
+				T.bf = LH //T的左子树比右子树多一个节点
+				T.rchild = t //T的右孩子指向t
+				T.lchild.lchild.rchild = T.lchild //T.左节点当做T左节点的左节点的右节点（此时T左节点的左节点和T的左节点互相指着，之后需要删除T左节点指向T左节点的左节点的指针）
+				T.lchild = T.lchild.lchild // 将T的左节点的左节点 当做T的左节点 此时T的原本左节点已经脱离
+				T.lchild.rchild.lchild = nil //将T原本的左节点（此时是T左节点的右节点）的左指针删除
+				T.lchild.bf = EH
+				T.lchild.lchild.bf = EH
+				T.lchild.rchild.bf = EH
+			case EH:
+				switch l.rchild.bf {
+					case LH: //代码与上述类似
+					case RH:
+				}
+		}
 	}
 }
 
@@ -111,6 +158,7 @@ func RightBalance(T *BiTNode){
 		Rotate_right(T)
 	case RH:
 		Rotate_right(T)
+	case EH: //代码与LeftBalance类似
 	}
 
 }
